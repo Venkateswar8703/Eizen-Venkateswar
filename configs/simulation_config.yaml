@@ -1,0 +1,163 @@
+# Simulation Configuration: Store_0001 Hidden Inventory Mechanics
+seed: 42
+store_id: "STORE_0001"
+num_days: 730              # 104 weeks of daily history
+num_skus: 1600
+num_aisles: 32
+num_associates: 3
+daily_labor_minutes: 240.0 # 4 hours total per day across all associates
+aisle_setup_time_min: 4.0  # Setup penalty per aisle visited per day
+compliance_max_days: 90    # Mandatory count interval compliance floor
+
+# Category Breakdown & Error Mechanism Specifications
+categories:
+  Fresh Produce:
+    sku_count: 120
+    mean_demand_range: [2.0, 15.0]
+    unit_price_range: [0.99, 4.99]
+    margin_rate_range: [0.25, 0.45]
+    count_time_min: 1.8
+    spoilage_rate: 0.035
+    mis_scan_prob: 0.045     # Wrong PLU / cashier substitution
+    theft_prob: 0.005
+    theft_burst_mean: 2.0
+    dsd_share: 0.0
+    misplacement_prob: 0.010
+    receiving_error_prob: 0.015
+
+  Dairy & Eggs:
+    sku_count: 90
+    mean_demand_range: [3.0, 18.0]
+    unit_price_range: [1.99, 6.99]
+    margin_rate_range: [0.20, 0.35]
+    count_time_min: 1.2
+    spoilage_rate: 0.020
+    mis_scan_prob: 0.010
+    theft_prob: 0.008
+    theft_burst_mean: 2.5
+    dsd_share: 0.30          # Local milk/dairy DSD
+    misplacement_prob: 0.010
+    receiving_error_prob: 0.020
+
+  Meat & Seafood:
+    sku_count: 110
+    mean_demand_range: [1.5, 9.0]
+    unit_price_range: [4.99, 24.99]
+    margin_rate_range: [0.30, 0.50]
+    count_time_min: 2.2
+    spoilage_rate: 0.025
+    mis_scan_prob: 0.025     # Weight scale barcode mis-scans
+    theft_prob: 0.020
+    theft_burst_mean: 3.5
+    dsd_share: 0.0
+    misplacement_prob: 0.010
+    receiving_error_prob: 0.020
+
+  Bakery:
+    sku_count: 70
+    mean_demand_range: [2.0, 12.0]
+    unit_price_range: [1.49, 7.99]
+    margin_rate_range: [0.40, 0.65]
+    count_time_min: 1.0
+    spoilage_rate: 0.040     # Daily day-old staling
+    mis_scan_prob: 0.020
+    theft_prob: 0.006
+    theft_burst_mean: 2.0
+    dsd_share: 0.20          # Commercial bread vendors
+    misplacement_prob: 0.008
+    receiving_error_prob: 0.015
+
+  Frozen:
+    sku_count: 150
+    mean_demand_range: [0.8, 6.0]
+    unit_price_range: [2.49, 12.99]
+    margin_rate_range: [0.30, 0.45]
+    count_time_min: 1.5
+    spoilage_rate: 0.002     # Low spoilage (freezer)
+    mis_scan_prob: 0.010
+    theft_prob: 0.008
+    theft_burst_mean: 2.5
+    dsd_share: 0.15          # Ice cream DSD
+    misplacement_prob: 0.025 # Backroom freezer overflow
+    receiving_error_prob: 0.025
+
+  Packaged Grocery:
+    sku_count: 400
+    mean_demand_range: [0.05, 4.0] # Heavy intermittent long tail
+    unit_price_range: [1.29, 9.99]
+    margin_rate_range: [0.25, 0.40]
+    count_time_min: 1.4
+    spoilage_rate: 0.001
+    mis_scan_prob: 0.008
+    theft_prob: 0.008
+    theft_burst_mean: 2.0
+    dsd_share: 0.05
+    misplacement_prob: 0.030 # Placed in wrong aisle by shoppers
+    receiving_error_prob: 0.030 # Case pack vs single unit errors
+
+  Beverages:
+    sku_count: 180
+    mean_demand_range: [1.0, 14.0]
+    unit_price_range: [1.19, 8.99]
+    margin_rate_range: [0.28, 0.45]
+    count_time_min: 1.6
+    spoilage_rate: 0.002
+    mis_scan_prob: 0.012
+    theft_prob: 0.015
+    theft_burst_mean: 4.0
+    dsd_share: 0.55          # Major soda/beer DSD vendors
+    misplacement_prob: 0.020
+    receiving_error_prob: 0.040 # Unrecorded DSD drop-offs
+
+  Snacks & Confectionery:
+    sku_count: 160
+    mean_demand_range: [0.8, 9.0]
+    unit_price_range: [0.99, 6.49]
+    margin_rate_range: [0.35, 0.55]
+    count_time_min: 1.2
+    spoilage_rate: 0.003
+    mis_scan_prob: 0.015
+    theft_prob: 0.028        # High impulse shoplifting
+    theft_burst_mean: 3.5
+    dsd_share: 0.40          # Frito-Lay / snack DSD
+    misplacement_prob: 0.040 # Endcaps, register dump bins
+    receiving_error_prob: 0.025
+
+  Household & Cleaning:
+    sku_count: 140
+    mean_demand_range: [0.3, 4.5]
+    unit_price_range: [2.99, 22.99]
+    margin_rate_range: [0.30, 0.45]
+    count_time_min: 1.8
+    spoilage_rate: 0.001
+    mis_scan_prob: 0.010
+    theft_prob: 0.022        # Detergent theft
+    theft_burst_mean: 4.0
+    dsd_share: 0.0
+    misplacement_prob: 0.035 # Bulky top-stock / backroom
+    receiving_error_prob: 0.025
+
+  Health & Beauty:
+    sku_count: 180
+    mean_demand_range: [0.2, 5.0]
+    unit_price_range: [4.99, 64.99] # High unit price (razors, cosmetics, OTC)
+    margin_rate_range: [0.45, 0.70]
+    count_time_min: 2.5      # Locked case unlocks, small barcodes
+    spoilage_rate: 0.002
+    mis_scan_prob: 0.018
+    theft_prob: 0.055        # Highest theft rate (organized retail crime)
+    theft_burst_mean: 5.5    # Sweeping 4-8 units at once
+    dsd_share: 0.05
+    misplacement_prob: 0.025
+    receiving_error_prob: 0.020
+
+# Structural Regime Shifts (for Drift Detection in Module 07)
+regime_shifts:
+  - day: 400
+    category: "Health & Beauty"
+    parameter: "theft_prob"
+    multiplier: 1.60        # +60% theft surge
+  - day: 550
+    category: "All"
+    parameter: "receiving_error_prob"
+    multiplier: 0.35        # Supply chain barcode scanner upgrade
