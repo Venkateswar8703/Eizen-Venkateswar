@@ -1,5 +1,13 @@
 # Enterprise Scale Architecture: 2,000 Stores & 1.12 Billion Daily Predictions (Module 07)
 
+> **⚠️ PROPOSED ARCHITECTURE — NOT IMPLEMENTED**
+>
+> This document describes a **proposed production deployment design** for a hypothetical 2,000-store chain.
+> The repository implements a **single-store prototype** (STORE_0001, 1,600 SKUs, 730 days).
+> Hardware cost estimates are based on published cloud pricing as of 2024–2025 and are
+> **estimates, not measured benchmarks**. Throughput figures are theoretical based on
+> published LightGBM/Treelite benchmarks, not validated on this codebase at scale.
+
 ## 1. Executive Summary & Scale Dimensions
 
 Deploying the Perpetual Inventory Optimization system across a national grocery chain entails scaling from a single store ($1,600$ SKUs) to an enterprise fleet:
@@ -11,7 +19,7 @@ N_{\text{horizons}} &= 14 \text{ days} \\
 \text{Total Daily Predictions} &= 2,000 \times 40,000 \times 14 = \mathbf{1,120,000,000 \ (1.12 \text{ Billion})}
 \end{aligned}$$
 
-At this volume, naive architectures fail due to memory saturation, feature store serialization bottlenecks, and uncontrolled cloud compute bills. This document specifies the production architecture, data pipeline, model topologies, cost models, monitoring safeguards, and distributed optimization engine required to execute this workload reliably under $18$ minutes every night for less than $\$40/\text{day}$.
+At this volume, naive architectures fail due to memory saturation, feature store serialization bottlenecks, and uncontrolled cloud compute bills. This document proposes a production architecture, data pipeline, model topologies, cost models, monitoring safeguards, and distributed optimization engine. All cost and timing figures are estimates based on cloud provider pricing and theoretical throughput benchmarks.
 
 ---
 
@@ -95,17 +103,23 @@ At this volume, naive architectures fail due to memory saturation, feature store
   $$\text{Execution Time} = \frac{1.12 \times 10^9 \text{ rows}}{32 \text{ nodes} \times 1.2 \times 10^6 \text{ rows/sec}} \approx 29.1 \text{ seconds (pure scoring)}$$
   Including feature loading and parquet serialization, end-to-end inference takes **$14.2\text{ minutes}$**.
 
-### 4.3 Daily Compute Budget
-| Resource | Specification | Quantity | Daily Runtime | Unit Cost | Daily Cost |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| **Inference Cluster** | AWS `c6i.8xlarge` (32 vCPU, 64 GB) | 16 Spot Instances | 0.5 hours | $1.36 / hr | **$10.88** |
-| **Feature Extraction** | AWS `r6i.4xlarge` (Spark/Polars) | 8 Spot Instances | 0.5 hours | $1.00 / hr | **$4.00** |
-| **Distributed Solver** | AWS `c6i.4xlarge` (16 vCPU) | 20 Spot Instances | 0.5 hours | $0.68 / hr | **$6.80** |
-| **Storage & Egress** | S3 / Cloudflare R2 | 500 GB daily I/O | Continuous | $0.015 / GB | **$7.50** |
-| **Metadata & Logging** | Managed Postgres / Redis | 1 instance | 24 hours | $0.38 / hr | **$9.12** |
-| **TOTAL DAILY COST** | — | — | — | — | **$38.30 / day** |
+### 4.3 Estimated Daily Compute Budget (Proposed — Not Measured)
 
-**Annualized Cost:** $\$13,980 / \text{year}$ across 2,000 stores ($<\$7.00 / \text{store / year}$), representing an ROI in excess of $1,000\times$ given the $\$10,800+$ weekly shrink savings per store.
+> **⚠️ The figures below are cost estimates** based on AWS spot pricing (2024–2025 rates).
+> They have not been validated by running this workload in production.
+> Actual costs will depend on spot availability, data volume, and reserved capacity.
+
+| Resource | Specification | Quantity | Daily Runtime | Unit Cost | Est. Daily Cost |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **Inference Cluster** | AWS `c6i.8xlarge` (32 vCPU, 64 GB) | 16 Spot Instances | 0.5 hours | ~$1.36 / hr | ~$10.88 |
+| **Feature Extraction** | AWS `r6i.4xlarge` (Spark/Polars) | 8 Spot Instances | 0.5 hours | ~$1.00 / hr | ~$4.00 |
+| **Distributed Solver** | AWS `c6i.4xlarge` (16 vCPU) | 20 Spot Instances | 0.5 hours | ~$0.68 / hr | ~$6.80 |
+| **Storage & Egress** | S3 / Cloudflare R2 | 500 GB daily I/O | Continuous | ~$0.015 / GB | ~$7.50 |
+| **Metadata & Logging** | Managed Postgres / Redis | 1 instance | 24 hours | ~$0.38 / hr | ~$9.12 |
+| **ESTIMATED TOTAL** | — | — | — | — | **~$38.30 / day** |
+
+**Note:** These estimates assume stable spot pricing and theoretical throughput. Any chain-wide ROI
+calculations based on single-store simulation results should be treated as illustrative only.
 
 ---
 
@@ -163,11 +177,17 @@ Solving a single centralized optimization problem across 2,000 stores simultaneo
 
 ---
 
-## 8. Summary Checklist of Module 07 Requirements
+## 8. Summary: Implemented vs. Proposed
 
-- [x] Full architectural specification for 2,000 stores and 1.12B daily predictions.
-- [x] Micro-economic hardware cost model showing $<\$40/\text{day}$ cloud compute feasibility.
-- [x] Comparison of GBDT vs Deep Sequence models in production throughput.
-- [x] Global vs cluster model hierarchy and cold-start protocols.
-- [x] PSI/KS drift detection and closed-loop bandit exploration ($\epsilon=0.05$).
-- [x] Two-level hierarchical distributed optimization with CP-SAT and greedy fallback.
+| Item | Status |
+|------|--------|
+| Single-store prototype (1,600 SKUs, 730 days) | ✅ **Implemented** |
+| Closed-loop bandit simulation (`src/scale/`) | ✅ **Implemented** |
+| Full architectural specification (2,000 stores) | 📐 **Proposed design** |
+| Hardware cost model (~$38/day estimate) | 📐 **Estimated, not measured** |
+| Distributed Ray inference cluster | 📐 **Proposed** |
+| Feast/Hopsworks feature store | 📐 **Proposed** |
+| 2,000-store parallel CP-SAT solver farm | 📐 **Proposed** |
+| GBDT vs. Transformer throughput comparison | 📐 **Estimate based on literature** |
+| PSI/KS drift detection in production | 📐 **Proposed** |
+| Global backbone + cluster fine-tuning | 📐 **Proposed** |
