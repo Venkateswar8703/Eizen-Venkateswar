@@ -316,7 +316,7 @@ Maximise: Σ EV(i,d) × x(i,k,d) − Σ AisleSetupCost × y(a,k,d)
 
 Subject to:
   - x(i,k,d) ≤ y(aisle(i),k,d)                   [aisle linking]
-  - Σ items·time + Σ aisles·setup ≤ 240 min/day   [labor budget]
+  - Σ items·time + Σ aisles·setup ≤ 80 min/associate/day  [240 min TOTAL ÷ 3 associates]
   - Σ x(i,k,d) ≤ 1 over all k,d                  [no duplicate counts]
   - Σ x(i,k,d) = 1 if days_since_count + 7 ≥ 90  [compliance floor]
 ```

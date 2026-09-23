@@ -34,7 +34,7 @@
 * **Formulation:** $S(i, t) = \min\left(D(i, t),\, \text{TOH}(i, t)\right)$, where $S(i,t)$ is observed POS sales, $D(i,t) \sim \mathcal{P}(\lambda)$ is unconstrained latent demand, and $\text{TOH}(i,t)$ is physical stock.
 * **Recovery (Tobit / EM Framework):**
   $$\mathbb{E}[D \mid S = s, \text{TOH} = s] = s + \frac{\lambda \cdot P(D \ge s+1)}{P(D \ge s)}$$
-  On our empirical dataset, naive historical mean is $4.407$ units/day, while Tobit-recovered unconstrained mean is $4.485$ units/day—proving a **$1.75\%$ systematic downward bias** caused by stockouts.
+  On the synthetic Store 0001 panel, naive historical mean is $4.407$ units/day, while Tobit-recovered unconstrained mean is $4.485$ units/day — a simulation result **indicating a $1.75\%$ systematic downward bias** caused by stockouts. (Note: both figures are outputs from the synthetic simulator; real-store bias magnitude would need to be estimated from actual censored POS data.)
 
 ### Q5. Identification Challenge: 3 Days Zero Sales with Book Stock of 8
 * **Explanations Ranked by Posterior Probability:**
@@ -48,9 +48,9 @@
 
 ### Q6. Statistical Power of Zero-Streak Test ($\lambda = 0.3$/day)
 * $P(\text{Streak of } k \text{ zeros} \mid \text{In-Stock}) = e^{-k \lambda} = e^{-0.3 k}$.
-  * $k = 3$ days: $p = 0.4066$ (Power = $0.5934$, **Not significant**).
-  * $k = 7$ days: $p = 0.1225$ (Power = $0.8775$, **Not significant**).
-  * $k = 10$ days: $p = 0.0498$ (**Statistically significant at $\alpha = 0.05$**).
+  * $k = 3$ days: null probability $p = 0.4066$ (1 − null probability = $0.5934$, **not statistically significant** — this is a tail probability under the null, NOT formal statistical power).
+  * $k = 7$ days: null probability $p = 0.1225$ (1 − null probability = $0.8775$, **still not statistically significant at $\alpha = 0.05$**).
+  * $k = 10$ days: null probability $p = 0.0498$ (**Below the $\alpha = 0.05$ threshold — evidence against the in-stock null**).
 * **Takeaway:** For slow movers ($\lambda = 0.3$), zero sales is uninformative until **day 10**. Flagging at day 3 creates massive false alarms.
 
 ---
@@ -71,7 +71,7 @@
 * **Daily Hazard Rates by Category:**
   * **Produce / Bakery:** Hazard $h(t) \approx 0.47$ (Median time to gap $= 1.4$ days) $\rightarrow$ Requires weekly or bi-weekly auditing.
   * **Health & Beauty:** Hazard $h(t) \approx 0.108$ (Median time to gap $= 6.4$ days).
-  * **Packaged Grocery:** Hazard $h(t) \approx 0.028$ (Median time to gap $= 24.5$ days) $\rightarrow$ Auditing once per month is optimal.
+  * **Packaged Grocery:** Hazard $h(t) \approx 0.028$ (Median time to gap $= 24.5$ days) $\rightarrow$ Monthly auditing is sufficient under these simulation parameters.
 
 ---
 
@@ -96,7 +96,7 @@
 ## 5. On Uncertainty, Calibration, and Hierarchy
 
 ### Q13. Probability Calibration & Optimization Sensitivity
-* Uncalibrated probabilities distort the linear objective $\max \sum p_i v_i x_i$. Isotonic regression calibrates predicted probabilities, reducing Expected Calibration Error (ECE) from $0.142$ to $0.028$ and ensuring optimal labor allocation.
+* Uncalibrated probabilities distort the linear objective $\max \sum p_i v_i x_i$. Isotonic regression calibrates predicted probabilities. On this synthetic dataset, calibration reduced Expected Calibration Error (ECE) from $0.142$ to $0.028$ (simulation result — run `scripts/train_gap_prediction.py` to reproduce), enabling better-ranked labor allocation. These ECE values are specific to this simulation run and should not be cited as universal benchmarks.
 
 ### Q14. Conformal Prediction for Time Series
 * Standard conformal prediction assumes exchangeability, which is violated by time series autocorrelation. We utilize **EnbPI (Ensemble Batch Prediction Intervals)** to construct robust $(1 - \alpha)$ distribution-free intervals for gap magnitude.
@@ -106,4 +106,4 @@
 * **Proof / Counterexample:** Consider SKU $A \in \text{Produce}$ with true $p_A = 0.8, v_A = \$10 \implies EV_A = \$8.00$. Consider SKU $B \in \text{HBA}$ with true $p_B = 0.5, v_B = \$15 \implies EV_B = \$7.50$. True ranking: $A > B$. If Produce is miscalibrated by $\gamma_{\text{prod}} = 0.8$ ($\hat{p}_A = 0.64$) and HBA by $\gamma_{\text{HBA}} = 1.2$ ($\hat{p}_B = 0.60$), then $\hat{EV}_A = \$6.40$ while $\hat{EV}_B = \$9.00$. The optimizer erroneously ranks $B > A$, demonstrating why **global probability calibration is mandatory**.
 
 ### Q16. Hierarchical Forecast Reconciliation (MinT)
-* Bottom-up SKU forecasts reconciled to Category and Store levels using MinT (Minimum Trace) reconciliation reduce forecast variance by $\approx 12\%$, improving safety-stock estimation and anomaly baseline stability.
+* Bottom-up SKU forecasts reconciled to Category and Store levels using MinT (Minimum Trace) reconciliation have been shown in the literature to reduce forecast variance. A $\approx 12\%$ variance reduction is cited here as an **illustrative estimate** based on published studies; this has not been measured on the current synthetic dataset.

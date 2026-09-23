@@ -177,7 +177,7 @@ persistence (0.5–2.0×), aisle setup time (0–8 min).
 - **Output:** `data/processed/count_plan_7day.parquet`, `data/results/optimization_benchmarks.parquet`
 
 **Constraints enforced:**
-- 3 associates, 240 usable minutes/day each
+- 3 associates, **240 usable minutes/day TOTAL** across all associates (= 80 min/associate)
 - 4.0-minute setup overhead per distinct aisle per associate per day
 - At most 1 count per SKU over 7 days
 - 90-day mandatory compliance floor (hard constraint)

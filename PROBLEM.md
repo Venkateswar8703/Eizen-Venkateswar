@@ -224,7 +224,7 @@ $$\sum_{i \in \mathcal{I}_c} x_{i, d} \ge m_c - s_{c, d}^{\text{cat}} \quad \for
 │ - PR-AUC (Precision-Recall Area Under Curve, class-imbalanced)              │
 │ - Expected Calibration Error (ECE) & Brier Score on predicted probabilities │
 │ - Quantile Loss / Pinball Loss on Latent Demand Forecasts                   │
-│ - DLinear vs. TFT Lift Ratio                                                │
+│ - DLinear vs. LightGBM Lift Ratio (research extension only; TFT not implemented)     │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 

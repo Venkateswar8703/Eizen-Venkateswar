@@ -19,6 +19,12 @@ def solve_7day_count_plan_greedy(
 ) -> Tuple[pd.DataFrame, Dict[str, any]]:
     """
     Greedy heuristic scheduler for 7-day multi-associate cycle count planning.
+
+    Parameters
+    ----------
+    daily_budget_min : float
+        Usable labor minutes **per associate per day**. When the total daily store
+        budget is 240 minutes across 3 associates, pass 240 / 3 = 80 here.
     """
     df = df_skus.copy().reset_index(drop=True)
     

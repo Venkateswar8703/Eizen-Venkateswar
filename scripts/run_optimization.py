@@ -33,13 +33,17 @@ def main():
     df_latest = df_ev[df_ev[day_col] == max_day].copy().reset_index(drop=True)
     print(f"Loaded {len(df_latest)} SKUs scored with EV for Day {max_day}.")
     
-    # 1. Solve 7-day schedule with primary CP-SAT solver
-    print("\nSolving 7-day schedule with OR-Tools CP-SAT (3 associates, 240 min/day, 4.0 min aisle setup)...")
+    # NOTE: The assignment specifies 240 usable labor minutes TOTAL per day across 3 associates.
+    # The CP-SAT solver enforces the budget PER ASSOCIATE, so per-associate budget = 240 / 3 = 80 min.
+    TOTAL_DAILY_MINUTES = 240.0
+    NUM_ASSOCIATES = 3
+    PER_ASSOCIATE_BUDGET = TOTAL_DAILY_MINUTES / NUM_ASSOCIATES  # = 80 min / associate
+    print(f"\nSolving 7-day schedule with OR-Tools CP-SAT ({NUM_ASSOCIATES} associates, {TOTAL_DAILY_MINUTES:.0f} min/day TOTAL = {PER_ASSOCIATE_BUDGET:.0f} min/associate, 4.0 min aisle setup)...")
     plan_cpsat, metrics_cpsat = solve_7day_count_plan_cpsat(
         df_latest,
         num_days=7,
-        num_associates=3,
-        daily_budget_min=240.0,
+        num_associates=NUM_ASSOCIATES,
+        daily_budget_min=PER_ASSOCIATE_BUDGET,
         item_count_time_min=1.6,
         aisle_setup_time_min=4.0,
         hourly_wage=21.0,
@@ -67,8 +71,8 @@ def main():
     df_bench, plans = run_all_optimization_benchmarks(
         df_latest,
         num_days=7,
-        num_associates=3,
-        daily_budget_min=240.0,
+        num_associates=NUM_ASSOCIATES,
+        daily_budget_min=PER_ASSOCIATE_BUDGET,
     )
     
     bench_path = results_dir / "optimization_benchmarks.parquet"

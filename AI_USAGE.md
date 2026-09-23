@@ -42,8 +42,9 @@ The development of this project followed an augmented pair-programming paradigm 
 ## 3. Human Design Decisions & Algorithmic Guardrails
 
 1. **Rejecting Model Over-Engineering:**
-   - When initial research showed that Aisle Graph Neural Networks and heavy Temporal Fusion Transformers provided negligible precision gains over Calibrated LightGBM while incurring $40\times$ higher inference costs, the human team explicitly selected Calibrated LightGBM as the production champion and documented the GNN limitations transparently.
+   - The Aisle Graph Neural Network (GNN) was implemented and evaluated. It did **not** outperform Calibrated LightGBM in this dataset; individual SKU-level zero-streak features dominated spatial aisle context. This negative result is documented honestly in `LIMITATIONS.md`.
+   - A Temporal Fusion Transformer (TFT) was considered as a research extension but was **not implemented** in this repository. No empirical comparison between TFT and LightGBM inference cost was performed; any prior claim of a 40× cost difference was an unvalidated estimate and has been removed.
 2. **Economic Grounding:**
-   - All dollar coefficients in the Value Tree (margin, basket abandonment loss, substitution salvage, associate wage) were anchored in empirical retail benchmarks rather than abstract loss functions.
+   - All dollar coefficients in the Value Tree (margin, basket abandonment loss, substitution salvage, associate wage) are **calibration assumptions** used for the synthetic simulator. They were chosen to be plausible for a grocery retailer but have not been empirically measured or validated against real retailer data. They should be re-estimated with actual retailer data before any production deployment.
 3. **Deterministic Reproducibility:**
    - Enforced fixed random seeds (`seed=42`) across all simulation, feature engineering, and model training scripts.

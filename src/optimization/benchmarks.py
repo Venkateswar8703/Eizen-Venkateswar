@@ -16,7 +16,7 @@ def evaluate_policy_schedule(
     hourly_wage: float = 21.0,
     item_count_time_min: float = 1.6,
     aisle_setup_time_min: float = 4.0,
-    total_budget_min: float = 7 * 3 * 240.0,
+    total_budget_min: float = 7 * 3 * 80.0,  # 240 total/day ÷ 3 associates = 80/associate × 3 × 7 days
 ) -> Dict[str, float]:
     """
     Computes standard evaluation metrics on a generated schedule.

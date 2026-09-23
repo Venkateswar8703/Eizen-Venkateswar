@@ -1,7 +1,11 @@
 """
 OR-Tools CP-SAT Multi-Day Workforce Optimization Solver (Module 06):
 Schedules cycle audits across 7 days, 3 associates, and 30 aisles.
-Enforces 240-min daily associate budget, 4.0-min aisle setup overhead, and 90-day compliance floor.
+Enforces the 90-day compliance floor.
+
+Labor constraint: The assignment specifies 240 usable labor minutes TOTAL per day across all 3 associates.
+The `daily_budget_min` parameter in this solver is the per-associate budget (= 240 / 3 = 80 min/associate).
+Aisle setup costs are charged per associate per aisle visit and reduce counting capacity accordingly.
 """
 
 from typing import Dict, List, Optional, Set, Tuple
@@ -21,7 +25,13 @@ def solve_7day_count_plan_cpsat(
     max_solve_time_seconds: float = 30.0,
 ) -> Tuple[pd.DataFrame, Dict[str, any]]:
     """
-    Solves optimal 7-day multi-associate audit schedule using OR-Tools CP-SAT.
+    Solves the 7-day multi-associate audit scheduling problem using OR-Tools CP-SAT.
+
+    Parameters
+    ----------
+    daily_budget_min : float
+        Usable labor minutes **per associate per day**. When the total daily store
+        budget is 240 minutes across 3 associates, pass 240 / 3 = 80 here.
     """
     df = df_skus.copy().reset_index(drop=True)
     n_skus = len(df)
