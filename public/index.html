@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Perpetual Inventory Challenge | Eizen AI</title>
+  <meta name="description" content="End-to-end Predict-Then-Optimise system that detects retail inventory gaps, estimates economic cost, and schedules limited store-associate labor to recover maximum business value." />
+  <meta property="og:title" content="Perpetual Inventory Challenge | Eizen AI" />
+  <meta property="og:description" content="Gap prediction → Economic valuation → Workforce optimization. A take-home assignment solution by Senior Applied Data Scientist." />
+  <meta property="og:type" content="website" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --navy:    #050d1a;
+      --dark:    #0a1628;
+      --panel:   #0f1f36;
+      --border:  #1c3050;
+      --amber:   #e08704;
+      --amber-lt:#f5a623;
+      --teal:    #0d9488;
+      --blue:    #38bdf8;
+      --green:   #4ade80;
+      --muted:   #64748b;
+      --text:    #cbd5e1;
+      --white:   #f1f5f9;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--navy);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 2rem;
+      height: 60px;
+      background: rgba(5,13,26,0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-logo {
+      display: flex; align-items: center; gap: 10px;
+      font-weight: 700; font-size: 1rem; color: var(--white);
+      text-decoration: none;
+    }
+    .nav-logo span { color: var(--amber); }
+    .nav-links { display: flex; gap: 1.5rem; list-style: none; }
+    .nav-links a {
+      color: var(--muted); font-size: 0.85rem; text-decoration: none;
+      transition: color .2s;
+    }
+    .nav-links a:hover { color: var(--white); }
+    .nav-cta {
+      background: var(--amber); color: #000;
+      padding: 7px 18px; border-radius: 6px;
+      font-size: 0.82rem; font-weight: 700; text-decoration: none;
+      transition: background .2s, transform .1s;
+    }
+    .nav-cta:hover { background: var(--amber-lt); transform: translateY(-1px); }
+
+    /* ── HERO ── */
+    .hero {
+      min-height: 100vh;
+      display: flex; flex-direction: column; justify-content: center; align-items: center;
+      text-align: center;
+      padding: 80px 2rem 4rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero-bg {
+      position: absolute; inset: 0;
+      background:
+        radial-gradient(ellipse 70% 60% at 50% 40%, rgba(14,30,60,0.95) 0%, rgba(5,13,26,1) 100%);
+      z-index: 0;
+    }
+    .hero-grid {
+      position: absolute; inset: 0; z-index: 0;
+      background-image:
+        linear-gradient(rgba(224,135,4,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(224,135,4,0.04) 1px, transparent 1px);
+      background-size: 48px 48px;
+      mask-image: radial-gradient(ellipse at center, black 40%, transparent 80%);
+    }
+    .hero-content { position: relative; z-index: 1; max-width: 860px; }
+
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(224,135,4,0.12); border: 1px solid rgba(224,135,4,0.3);
+      color: var(--amber-lt); border-radius: 999px;
+      padding: 6px 16px; font-size: 0.78rem; font-weight: 600;
+      margin-bottom: 1.5rem;
+      animation: fadeUp .6s ease both;
+    }
+    .hero-badge::before {
+      content: ''; width: 8px; height: 8px; border-radius: 50%;
+      background: var(--amber); animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50%       { opacity: .5; transform: scale(1.4); }
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    h1 {
+      font-size: clamp(2rem, 5vw, 3.6rem);
+      font-weight: 800; line-height: 1.15;
+      color: var(--white);
+      margin-bottom: 1rem;
+      animation: fadeUp .7s ease .1s both;
+    }
+    h1 em { font-style: normal; color: var(--amber); }
+
+    .hero-sub {
+      font-size: clamp(1rem, 2vw, 1.2rem);
+      color: var(--text); max-width: 640px; margin: 0 auto 2.5rem;
+      animation: fadeUp .7s ease .2s both;
+    }
+
+    .hero-btns {
+      display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;
+      animation: fadeUp .7s ease .3s both;
+    }
+    .btn-primary {
+      background: var(--amber); color: #000;
+      padding: 14px 32px; border-radius: 8px;
+      font-weight: 700; font-size: 0.95rem; text-decoration: none;
+      transition: background .2s, transform .15s, box-shadow .2s;
+      box-shadow: 0 4px 24px rgba(224,135,4,0.35);
+      display: flex; align-items: center; gap: 8px;
+    }
+    .btn-primary:hover { background: var(--amber-lt); transform: translateY(-2px); box-shadow: 0 8px 32px rgba(224,135,4,0.5); }
+    .btn-secondary {
+      background: transparent; color: var(--white);
+      padding: 13px 28px; border-radius: 8px;
+      font-weight: 600; font-size: 0.95rem; text-decoration: none;
+      border: 1px solid var(--border);
+      transition: border-color .2s, background .2s, transform .15s;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .btn-secondary:hover { border-color: var(--blue); background: rgba(56,189,248,0.07); transform: translateY(-2px); }
+
+    /* ── FLOW STRIP ── */
+    .flow-strip {
+      display: flex; align-items: center; justify-content: center;
+      flex-wrap: wrap; gap: 0;
+      padding: 1.5rem 2rem;
+      background: var(--panel);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      font-size: 0.75rem; font-weight: 600; color: var(--muted);
+      overflow: hidden;
+    }
+    .flow-step {
+      padding: 4px 14px;
+      transition: color .2s;
+    }
+    .flow-step:hover { color: var(--amber); }
+    .flow-arrow { color: var(--border); font-size: 0.9rem; }
+
+    /* ── SECTION ── */
+    section { padding: 6rem 2rem; max-width: 1100px; margin: 0 auto; }
+
+    .section-label {
+      font-size: 0.72rem; font-weight: 700; letter-spacing: .12em;
+      color: var(--amber); text-transform: uppercase; margin-bottom: .75rem;
+    }
+    h2 {
+      font-size: clamp(1.6rem, 3vw, 2.4rem);
+      font-weight: 800; color: var(--white); margin-bottom: .75rem;
+    }
+    .section-desc { color: var(--text); max-width: 620px; margin-bottom: 3rem; }
+
+    /* ── KPI CARDS ── */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1rem; margin-bottom: 4rem;
+    }
+    .kpi-card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px; padding: 1.5rem;
+      position: relative; overflow: hidden;
+      transition: border-color .25s, transform .2s;
+    }
+    .kpi-card:hover { border-color: var(--amber); transform: translateY(-3px); }
+    .kpi-card::before {
+      content: ''; position: absolute;
+      top: 0; left: 0; right: 0; height: 3px;
+      background: linear-gradient(90deg, var(--amber), var(--amber-lt));
+    }
+    .kpi-num { font-size: 2rem; font-weight: 800; color: var(--white); }
+    .kpi-label { font-size: 0.75rem; color: var(--muted); margin-top: 4px; }
+
+    /* ── MODULE CARDS ── */
+    .module-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.25rem;
+    }
+    .module-card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 14px; padding: 1.75rem;
+      transition: border-color .25s, transform .2s, box-shadow .2s;
+    }
+    .module-card:hover {
+      border-color: var(--blue);
+      transform: translateY(-4px);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.4);
+    }
+    .module-num {
+      font-size: 0.7rem; font-weight: 700; letter-spacing: .1em;
+      color: var(--amber); margin-bottom: .5rem;
+    }
+    .module-title {
+      font-size: 1.05rem; font-weight: 700; color: var(--white); margin-bottom: .5rem;
+    }
+    .module-desc { font-size: 0.85rem; color: var(--muted); line-height: 1.55; }
+    .module-tag {
+      display: inline-block; margin-top: .75rem;
+      font-size: 0.68rem; font-weight: 600; padding: 3px 10px;
+      border-radius: 999px;
+    }
+    .tag-impl  { background: rgba(74,222,128,.12); color: var(--green); border: 1px solid rgba(74,222,128,.2); }
+    .tag-prop  { background: rgba(56,189,248,.12); color: var(--blue);  border: 1px solid rgba(56,189,248,.2); }
+
+    /* ── FORMULA BLOCK ── */
+    .formula-block {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--amber);
+      border-radius: 0 12px 12px 0;
+      padding: 1.5rem 2rem; margin: 2rem 0;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem; color: var(--blue);
+      overflow-x: auto;
+    }
+    .formula-block .comment { color: var(--muted); }
+
+    /* ── CONSTRAINT BOX ── */
+    .constraint-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1rem; margin-top: 2rem;
+    }
+    .constraint-card {
+      background: var(--dark);
+      border: 1px solid var(--border);
+      border-radius: 10px; padding: 1.25rem;
+      display: flex; gap: 1rem; align-items: flex-start;
+    }
+    .constraint-icon {
+      font-size: 1.5rem; flex-shrink: 0; margin-top: 2px;
+    }
+    .constraint-title { font-size: 0.85rem; font-weight: 700; color: var(--white); }
+    .constraint-desc  { font-size: 0.78rem; color: var(--muted); margin-top: 2px; }
+
+    /* ── HONEST STATUS TABLE ── */
+    .status-table {
+      width: 100%; border-collapse: collapse; font-size: 0.85rem;
+    }
+    .status-table th {
+      text-align: left; padding: 10px 14px;
+      border-bottom: 1px solid var(--border);
+      color: var(--muted); font-size: 0.72rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: .07em;
+    }
+    .status-table td {
+      padding: 11px 14px;
+      border-bottom: 1px solid rgba(28,48,80,0.5);
+      color: var(--text);
+    }
+    .status-table tr:last-child td { border-bottom: none; }
+    .status-table tr:hover td { background: rgba(255,255,255,0.02); }
+    .badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-size: 0.7rem; font-weight: 700; padding: 2px 9px;
+      border-radius: 999px;
+    }
+    .badge-impl  { background: rgba(74,222,128,.12); color: var(--green); }
+    .badge-prop  { background: rgba(56,189,248,.12); color: var(--blue); }
+    .badge-no    { background: rgba(248,113,113,.1); color: #f87171; }
+
+    /* ── CTA SECTION ── */
+    .cta-section {
+      text-align: center; padding: 6rem 2rem;
+      background: var(--panel);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+    .cta-section h2 { margin-bottom: 1rem; }
+    .cta-section p { color: var(--muted); max-width: 500px; margin: 0 auto 2rem; }
+
+    /* ── FOOTER ── */
+    footer {
+      text-align: center; padding: 2rem;
+      border-top: 1px solid var(--border);
+      font-size: 0.78rem; color: var(--muted);
+    }
+    footer a { color: var(--amber); text-decoration: none; }
+
+    /* ── DIVIDER ── */
+    .divider { border: none; border-top: 1px solid var(--border); margin: 0; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 640px) {
+      .nav-links { display: none; }
+      .flow-strip { gap: 4px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── NAVIGATION ── -->
+<nav>
+  <a class="nav-logo" href="#"><span>📦</span> Eizen AI — PI Engine</a>
+  <ul class="nav-links">
+    <li><a href="#architecture">Architecture</a></li>
+    <li><a href="#modules">Modules</a></li>
+    <li><a href="#optimisation">Optimisation</a></li>
+    <li><a href="#honesty">Scope</a></li>
+  </ul>
+  <a class="nav-cta" id="nav-app-link" href="https://github.com/Venkateswar8703/Eizen-Venkateswar" target="_blank" rel="noopener">
+    View on GitHub →
+  </a>
+</nav>
+
+<!-- ── HERO ── -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-grid"></div>
+  <div class="hero-content">
+    <div class="hero-badge">Eizen AI · Senior Data Scientist Take-Home</div>
+    <h1>Perpetual Inventory<br /><em>Gap Prediction &amp; Optimisation</em></h1>
+    <p class="hero-sub">
+      A Predict-Then-Optimise decision system that detects inventory record errors,
+      estimates their economic cost, and schedules limited store-associate labor
+      to recover the most business value.
+    </p>
+    <div class="hero-btns">
+      <a id="hero-app-btn" class="btn-primary"
+         href="https://github.com/Venkateswar8703/Eizen-Venkateswar" target="_blank" rel="noopener">
+        <span>🚀</span> Launch Live App
+      </a>
+      <a class="btn-secondary"
+         href="https://github.com/Venkateswar8703/Eizen-Venkateswar" target="_blank" rel="noopener">
+        <span>⭐</span> GitHub Repository
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ── FLOW STRIP ── -->
+<div class="flow-strip">
+  <span class="flow-step">Simulation</span>
+  <span class="flow-arrow">→</span>
+  <span class="flow-step">Statistical Analysis</span>
+  <span class="flow-arrow">→</span>
+  <span class="flow-step">Demand Forecasting</span>
+  <span class="flow-arrow">→</span>
+  <span class="flow-step">Gap Prediction</span>
+  <span class="flow-arrow">→</span>
+  <span class="flow-step">Economic Value</span>
+  <span class="flow-arrow">→</span>
+  <span class="flow-step">Workforce Optimisation</span>
+  <span class="flow-arrow">→</span>
+  <span class="flow-step">7-Day Count Plan</span>
+</div>
+
+<!-- ── KPI SECTION ── -->
+<section id="architecture">
+  <div class="section-label">Simulation Parameters</div>
+  <h2>Single-Store Prototype — Synthetic Data</h2>
+  <p class="section-desc">
+    All data is fully synthetic (seed = 42). Ground-truth inventory gaps are known
+    only because they were simulated — real stores cannot observe true on-hand
+    without physical counts.
+  </p>
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <div class="kpi-num">1,600</div>
+      <div class="kpi-label">SKUs across 10 categories</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-num">730</div>
+      <div class="kpi-label">Days of daily history (104 weeks)</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-num">1.17M</div>
+      <div class="kpi-label">Rows in the simulated panel</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-num">240</div>
+      <div class="kpi-label">Usable labor minutes/day TOTAL<br />(3 associates × 80 min each)</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-num">4 min</div>
+      <div class="kpi-label">Aisle setup overhead per visit</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-num">90 days</div>
+      <div class="kpi-label">Mandatory recount compliance floor</div>
+    </div>
+  </div>
+
+  <!-- Value Formula -->
+  <div class="section-label">Core Formula</div>
+  <h2>Expected Value of a Count</h2>
+  <div class="formula-block">
+    <span class="comment"># Expected Net Value of counting SKU i on day d</span><br />
+    EV(i, d) = P(gap)  ×  RecoveryRate(category)<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;×  PersistenceDays  ×  DailyDemand<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;×  (UnitMargin + BasketAbandonmentLoss − SubstitutionSalvage)<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;−  LaborCost(count_duration_min)<br />
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;−  FalsePositivePenalty<br />
+    <br />
+    <span class="comment"># Coefficients are calibration assumptions — not empirically measured facts</span>
+  </div>
+</section>
+
+<hr class="divider" />
+
+<!-- ── MODULES ── -->
+<section id="modules">
+  <div class="section-label">End-to-End Implementation</div>
+  <h2>8 Implemented Modules</h2>
+  <p class="section-desc">
+    All modules below are implemented and tested (28/28 unit tests passing).
+    The 2,000-store scale architecture is proposed, not implemented.
+  </p>
+  <div class="module-grid">
+    <div class="module-card">
+      <div class="module-num">MODULE 01</div>
+      <div class="module-title">Generative Simulation</div>
+      <div class="module-desc">
+        Realistic inventory dynamics: compound Poisson theft bursts, perishable spoilage,
+        DSD vendor drops, receiving errors, backroom misplacement, regime shifts.
+      </div>
+      <span class="module-tag tag-impl">✅ Implemented</span>
+    </div>
+    <div class="module-card">
+      <div class="module-num">MODULE 02</div>
+      <div class="module-title">Statistical Diagnostics</div>
+      <div class="module-desc">
+        ADI/CV² intermittency classification, Negative Binomial / ZIP distribution fitting,
+        zero-streak tail probability tests, CUSUM change-point detection.
+      </div>
+      <span class="module-tag tag-impl">✅ Implemented</span>
+    </div>
+    <div class="module-card">
+      <div class="module-num">MODULE 03</div>
+      <div class="module-title">Demand Forecasting</div>
+      <div class="module-desc">
+        Seasonal Naive → Croston/SBA/TSB → LightGBM multi-quantile.
+        Censoring-aware training downweights phantom-stockout observations ×10.
+      </div>
+      <span class="module-tag tag-impl">✅ Implemented</span>
+    </div>
+    <div class="module-card">
+      <div class="module-num">MODULE 04</div>
+      <div class="module-title">Gap Prediction &amp; ML</div>
+      <div class="module-desc">
+        Heuristics → Logistic Regression → Calibrated LightGBM (champion) →
+        DLinear baseline → Aisle Graph Relational (GNN). GNN negative result documented honestly.
+      </div>
+      <span class="module-tag tag-impl">✅ Implemented</span>
+    </div>
+    <div class="module-card">
+      <div class="module-num">MODULE 05</div>
+      <div class="module-title">Economic Value Engine</div>
+      <div class="module-desc">
+        Dollar value of each potential count. Sensitivity analysis across wages,
+        recovery rates, and persistence horizons. Coefficients are calibration assumptions.
+      </div>
+      <span class="module-tag tag-impl">✅ Implemented</span>
+    </div>
+    <div class="module-card">
+      <div class="module-num">MODULE 06</div>
+      <div class="module-title">Workforce Optimisation</div>
+      <div class="module-desc">
+        OR-Tools CP-SAT integer programming (primary) + Greedy heuristic (baseline).
+        7-day rolling plan: 3 associates, 240 min/day total, 4-min aisle setup, 90-day compliance.
+      </div>
+      <span class="module-tag tag-impl">✅ Implemented</span>
+    </div>
+    <div class="module-card">
+      <div class="module-num">MODULE 07</div>
+      <div class="module-title">Scale Design &amp; Closed-Loop Bias</div>
+      <div class="module-desc">
+        ε-greedy bandit simulation (implemented). 2,000-store distributed architecture
+        documented as proposed — not deployed.
+      </div>
+      <span class="module-tag tag-prop">📐 Partially Proposed</span>
+    </div>
+    <div class="module-card">
+      <div class="module-num">MODULE 08</div>
+      <div class="module-title">Streamlit Dashboard</div>
+      <div class="module-desc">
+        9-tab interactive application. All metrics derived from generated pipeline artifacts —
+        no hard-coded performance numbers.
+      </div>
+      <span class="module-tag tag-impl">✅ Implemented</span>
+    </div>
+  </div>
+</section>
+
+<hr class="divider" />
+
+<!-- ── OPTIMISATION ── -->
+<section id="optimisation">
+  <div class="section-label">Module 06 — Constraint Summary</div>
+  <h2>Workforce Optimisation Constraints</h2>
+  <div class="constraint-grid">
+    <div class="constraint-card">
+      <div class="constraint-icon">⏱️</div>
+      <div>
+        <div class="constraint-title">Labor Budget</div>
+        <div class="constraint-desc">240 usable minutes/day TOTAL across 3 associates<br />= 80 min per associate</div>
+      </div>
+    </div>
+    <div class="constraint-card">
+      <div class="constraint-icon">🚪</div>
+      <div>
+        <div class="constraint-title">Aisle Setup Cost</div>
+        <div class="constraint-desc">4-minute setup overhead per distinct aisle visited per associate per day</div>
+      </div>
+    </div>
+    <div class="constraint-card">
+      <div class="constraint-icon">📋</div>
+      <div>
+        <div class="constraint-title">Compliance Floor</div>
+        <div class="constraint-desc">Each SKU must be physically counted at least once every 90 days</div>
+      </div>
+    </div>
+    <div class="constraint-card">
+      <div class="constraint-icon">🔢</div>
+      <div>
+        <div class="constraint-title">Uniqueness</div>
+        <div class="constraint-desc">At most 1 count per SKU per 7-day rolling horizon (no repeat audits)</div>
+      </div>
+    </div>
+    <div class="constraint-card">
+      <div class="constraint-icon">🔗</div>
+      <div>
+        <div class="constraint-title">Aisle Linking</div>
+        <div class="constraint-desc">A SKU can only be counted if its aisle is activated — non-separable setup cost</div>
+      </div>
+    </div>
+    <div class="constraint-card">
+      <div class="constraint-icon">⚖️</div>
+      <div>
+        <div class="constraint-title">Workload Balance</div>
+        <div class="constraint-desc">Associate daily minutes must not deviate from team mean by &gt;20 min (soft)</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider" />
+
+<!-- ── HONEST SCOPE TABLE ── -->
+<section id="honesty">
+  <div class="section-label">Scientific Honesty</div>
+  <h2>Implemented vs. Proposed vs. Not Implemented</h2>
+  <p class="section-desc">
+    This project is a single-store synthetic-data prototype. All implementation status
+    is documented transparently.
+  </p>
+  <table class="status-table">
+    <thead>
+      <tr>
+        <th>Component</th>
+        <th>Status</th>
+        <th>Notes</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Synthetic data simulator (seed=42)</td>
+        <td><span class="badge badge-impl">✅ Implemented</span></td>
+        <td>1,600 SKUs, 730 days, 8 error mechanisms</td>
+      </tr>
+      <tr>
+        <td>Statistical diagnostics</td>
+        <td><span class="badge badge-impl">✅ Implemented</span></td>
+        <td>ADI/CV², NegBin, CUSUM, censoring</td>
+      </tr>
+      <tr>
+        <td>Demand forecasting</td>
+        <td><span class="badge badge-impl">✅ Implemented</span></td>
+        <td>Seasonal Naive, Croston/SBA/TSB, LightGBM</td>
+      </tr>
+      <tr>
+        <td>Gap prediction (LightGBM champion + GNN)</td>
+        <td><span class="badge badge-impl">✅ Implemented</span></td>
+        <td>GNN negative result documented honestly</td>
+      </tr>
+      <tr>
+        <td>Economic value engine</td>
+        <td><span class="badge badge-impl">✅ Implemented</span></td>
+        <td>Coefficients are calibration assumptions, not empirical facts</td>
+      </tr>
+      <tr>
+        <td>OR-Tools CP-SAT + Greedy optimisation</td>
+        <td><span class="badge badge-impl">✅ Implemented</span></td>
+        <td>28/28 unit tests passing</td>
+      </tr>
+      <tr>
+        <td>9-tab Streamlit dashboard</td>
+        <td><span class="badge badge-impl">✅ Implemented</span></td>
+        <td>All metrics from generated artifacts — no hard-coded numbers</td>
+      </tr>
+      <tr>
+        <td>2,000-store production architecture</td>
+        <td><span class="badge badge-prop">📐 Proposed</span></td>
+        <td>Design documented in SCALE_DESIGN.md; not deployed</td>
+      </tr>
+      <tr>
+        <td>Transformer / TFT deep learning</td>
+        <td><span class="badge badge-no">❌ Not Implemented</span></td>
+        <td>Considered as future research; no empirical comparison performed</td>
+      </tr>
+      <tr>
+        <td>Real retailer POS / inventory data</td>
+        <td><span class="badge badge-no">❌ Not Available</span></td>
+        <td>All data is synthetic. External validity is unknown.</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ── CTA ── -->
+<div class="cta-section">
+  <h2>Explore the Live Application</h2>
+  <p>Run the full pipeline locally or launch the interactive 9-tab Streamlit dashboard to explore all modules end-to-end.</p>
+  <div class="hero-btns" style="margin-top: 0;">
+    <a id="cta-app-btn" class="btn-primary"
+       href="https://github.com/Venkateswar8703/Eizen-Venkateswar" target="_blank" rel="noopener">
+      <span>🚀</span> Launch Live App
+    </a>
+    <a class="btn-secondary"
+       href="https://github.com/Venkateswar8703/Eizen-Venkateswar" target="_blank" rel="noopener">
+      <span>📄</span> View README
+    </a>
+  </div>
+  <p style="font-size:0.78rem; color: var(--muted); margin-top: 1.5rem;">
+    Streamlit app is hosted on Streamlit Community Cloud — not on Vercel.<br />
+    This landing page is served by Vercel.
+  </p>
+</div>
+
+<!-- ── FOOTER ── -->
+<footer>
+  <p>
+    Perpetual Inventory Challenge · Eizen AI ·
+    <a href="https://github.com/Venkateswar8703/Eizen-Venkateswar" target="_blank" rel="noopener">GitHub</a>
+    · Built with synthetic data (seed = 42) · All metrics from pipeline artifacts
+  </p>
+</footer>
+
+<script>
+  // When the Streamlit Cloud URL is known, update all "Launch Live App" buttons here:
+  // const STREAMLIT_URL = "https://your-app.streamlit.app";
+  // document.querySelectorAll('#hero-app-btn, #nav-app-link, #cta-app-btn').forEach(el => {
+  //   el.href = STREAMLIT_URL;
+  //   if (el.id === 'nav-app-link') el.textContent = 'Open Live App →';
+  // });
+
+  // Subtle entrance animation on scroll
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.style.opacity = '1';
+        e.target.style.transform = 'translateY(0)';
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.module-card, .kpi-card, .constraint-card').forEach(el => {
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(16px)';
+    el.style.transition = 'opacity .5s ease, transform .5s ease';
+    observer.observe(el);
+  });
+</script>
+</body>
+</html>

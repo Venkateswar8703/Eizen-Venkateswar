@@ -1,0 +1,16 @@
+# Streamlit app — runs on Streamlit Community Cloud, NOT on Vercel.
+# Vercel serves the static landing page in public/ only.
+app/
+src/
+scripts/
+tests/
+configs/
+data/
+venv/
+.venv/
+*.py
+*.yaml
+*.parquet
+*.csv.gz
+requirements.txt
+pytest.ini
